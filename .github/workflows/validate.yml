@@ -1,0 +1,51 @@
+name: Validate Training Content
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    name: Validate SOC Training Lab Content
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check required directories exist
+        run: |
+          echo "=== Directory Structure Check ==="
+          for dir in onboarding scenarios tabletop quick-reference certifications; do
+            if [ -d "$dir" ]; then
+              echo "  OK : $dir/"
+            else
+              echo "  MISSING: $dir/"
+            fi
+          done
+
+      - name: Check required files exist
+        run: |
+          echo "=== Required Files Check ==="
+          for f in README.md CONTRIBUTING.md SECURITY.md; do
+            if [ -f "$f" ]; then
+              echo "  OK : $f"
+            else
+              echo "  MISSING: $f"
+            fi
+          done
+
+      - name: Validate Markdown files
+        run: |
+          echo "=== Markdown File Count ==="
+          find . -name "*.md" -not -path "./.git/*" | wc -l | xargs echo "Total Markdown files:"
+          echo ""
+          echo "=== Content Inventory ==="
+          echo "Onboarding guides   : $(find onboarding -name '*.md' 2>/dev/null | wc -l)"
+          echo "Scenario files      : $(find scenarios -name '*.md' 2>/dev/null | wc -l)"
+          echo "Tabletop exercises  : $(find tabletop -name '*.md' 2>/dev/null | wc -l)"
+          echo "Quick-ref cards     : $(find quick-reference -name '*.md' 2>/dev/null | wc -l)"
+          echo "Certification docs  : $(find certifications -name '*.md' 2>/dev/null | wc -l)"
